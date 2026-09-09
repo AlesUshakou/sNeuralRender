@@ -7,6 +7,9 @@ NVIDIA Optical Flow or your own motion vectors.
 
 ![panel](docs/panel.png)
 
+**Download:** [latest release](https://github.com/AlesUshakou/sNeuralRender/releases/latest)
+(`sNeuralRender-vX.Y-win64.zip`, Nuke 16.1 and 17.0, Windows x64). Then follow [Install](#install).
+
 > Not affiliated with or endorsed by NVIDIA. The plugin only drives NVIDIA's runtime; the
 > runtime itself is NVIDIA software and is **not included** in this download (see below).
 
@@ -50,7 +53,10 @@ come with your display driver; there is nothing to copy for them.
 
 ### Steps
 
-1. Unzip. You get one folder, `sNeuralRender`, with this layout:
+1. Download `sNeuralRender-vX.Y-win64.zip` from the
+   [latest release](https://github.com/AlesUshakou/sNeuralRender/releases/latest) (not GitHub's
+   "Source code" archive, it holds only this README) and unzip it. You get one folder,
+   `sNeuralRender`, with this layout:
 
    ```
    sNeuralRender\
