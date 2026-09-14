@@ -12,10 +12,6 @@ per-mask strengths and temporal history.</p>
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-lightgrey?style=flat-square"></a>
 </p>
 
-<p align="center"><img src="docs/demo.webp" alt="Before / after: original footage, then the neural result" width="800"></p>
-<p align="center"><sub>Original, then the neural result (animated preview). Full-quality 1080p clip:
-<a href="docs/vid03.mp4">docs/vid03.mp4</a>, 10 s; GitHub plays it on the file page.</sub></p>
-
 <p align="center"><img src="docs/panel.png" alt="sNeuralRender panel in Nuke" width="720"></p>
 
 <p align="center">
@@ -29,6 +25,10 @@ A native Nuke plugin that runs NVIDIA's **DLSS 5 Neural Rendering** (NGX feature
 footage: global structure/tone controls, the runtime's automask, any number of your own masks
 with their own strengths, and temporal history driven by NVIDIA Optical Flow or your own
 motion vectors. `sNeuralRender-vX.Y-win64.zip` covers Nuke 16.1 and 17.0 on Windows x64.
+
+<p align="center"><img src="docs/demo.webp" alt="Before / after: original footage, then the neural result" width="800"></p>
+<p align="center"><sub>Original, then the neural result (animated preview). Full-quality 1080p clip:
+<a href="docs/vid03.mp4">docs/vid03.mp4</a>, 10 s; GitHub plays it on the file page.</sub></p>
 
 > Not affiliated with or endorsed by NVIDIA. The plugin only drives NVIDIA's runtime; the
 > runtime itself is NVIDIA software and is **not included** in this download (see below).
