@@ -35,8 +35,8 @@ motion vectors. `sNeuralRender-vX.Y-win64.zip` covers Nuke 16.1 and 17.0 on Wind
 |---|---|
 | OS | Windows 10 / 11, x64 |
 | Nuke | 16.1 or 17.0 (Windows builds included; NukeX / Studio work the same) |
-| GPU | NVIDIA GPU supported by DLSS 5 Neural Rendering (GeForce RTX 40 / 50 series; tested on RTX PRO 6000 Blackwell) |
-| Driver | A driver whose NGX core supports feature 18. Tested with 610.88. Older drivers report `feature 18 not available`. |
+| GPU | NVIDIA GPU supported by DLSS 5 Neural Rendering (GeForce RTX 40 / 50 series). **Tested on GeForce RTX 5090 and RTX PRO 6000 Blackwell.** |
+| Driver | A recent NVIDIA display driver. Tested with **610.88** (R610). The Neural Rendering runtime itself declares a minimum of 470; on 596.86 it created and evaluated feature 18 in our logs, but the plugin was not tested there. If `runtime info` shows an NGX error, update the driver first. |
 | Runtime | **`nvngx_dlssnr.dll`, not included** — NVIDIA's Neural Rendering runtime, tested build 310.8.0. See [Install](#install) for where to get it and where to put it. |
 
 ## Install
@@ -123,8 +123,17 @@ masks). Output: `rgba` plus `nr_motion.u/v`, the vectors the runtime actually us
 The panel follows NVIDIA's own "DLSS 5 developer controls":
 
 - **model** A / B / C — the runtime's three styles. **DLSS on** bypasses the node.
+- **input colorspace** — the runtime is display-referred SDR (sRGB), so with `linear` (default)
+  the node encodes to sRGB before it and decodes after. Use `display` when your footage is
+  already video-encoded.
 - **GLOBAL CONTROLS** — `global` runs the neural renderer on the whole frame with
   `structure intensity` / `tone intensity`. Switch `global` off to touch only the masked areas.
+- **HIGHLIGHTS** — `highlight recovery` (default 1) decides what happens to scene values above
+  `recovery threshold` (default 1), which the runtime can only see as white. The neural result is
+  applied to those pixels as a gain on the original value, so speculars and practicals keep their
+  level and colour instead of coming back flat white. Pull recovery down to blend back towards the
+  clipped result, or raise the threshold to leave the first stops above white to the runtime.
+  Pixels at or below the threshold are untouched.
 - **MODEL AUTOMASK** — the runtime's automatic character/skin mask with its own
   `skin structure intensity` (it only has an effect while automask is on).
 - **MASKING** — connect a mask to `mask1` and its controls appear (the next arrow, `mask2`,
@@ -140,18 +149,16 @@ jumping to a frame replays up to `history` frames before it (from the last detec
 Flow** (default), from the `motion` input (SmartVector / VectorGenerator `backward` layer), or is
 zero. Finished frames are cached (`cache (MB)`).
 
-**Color** tab: the runtime is display-referred SDR (sRGB). With `input colorspace = linear`
-(default) the node encodes to sRGB before the runtime and decodes after; values outside 0..1
-are clamped. Use `display` when your footage is already video-encoded.
-
 ## Performance
 
-RTX PRO 6000, one pass: ≈15 ms per 1080p frame, ≈33 ms per 4K frame, plus one-time
+Measured on an RTX PRO 6000, one pass: ≈15 ms per 1080p frame, ≈33 ms per 4K frame, plus one-time
 initialisation (≈0.4 s) and ≈0.25 s per session (per pass / resolution). Each mask adds a pass.
 
 ## Known limitations
 
-- SDR only: the runtime expects display-referred sRGB and clamps to 0..1.
+- SDR only: the runtime expects display-referred sRGB and only sees 0..1. Values above 1 keep
+  their level through `highlights = preserve above 1`, but the network never sees highlight detail,
+  so it cannot reconstruct texture inside a blown area.
 - Runtime 310.8.0 ignores its depth input and has one weight set; the node therefore exposes
   neither depth nor presets (they will come back when a runtime uses them).
 - Windows only, Nuke 16.1 and 17.0 (other versions need a rebuild from source).
@@ -164,7 +171,7 @@ initialisation (≈0.4 s) and ≈0.25 s per session (per pass / resolution). Eac
 |---|---|
 | `Unknown command sNeuralRender` | The folder is not on the plugin path, or no build for this Nuke version (see the console). |
 | `runtime not found` in `runtime info` | `nvngx_dlssnr.dll` is not in `sNeuralRender\runtime\` (see Install), or `runtime dir` on the System tab points elsewhere. |
-| `feature 18 not available` / NGX errors | Driver too old or GPU not supported. |
+| NGX errors in `runtime info` (`0xBAD00001`, `feature ... not supported`) | The NGX core of your driver or the runtime build rejects the GPU / driver combination: update the driver (610.88 tested), then check that the GPU is one the runtime supports (RTX 40 / 50, RTX PRO Blackwell). |
 | Flicker between frames | Turn `temporal` on (Temporal tab). |
 | Slow scrubbing with heavy upstream nodes | Each random access replays `history` frames; lower `history`, or precomp the input. |
 
