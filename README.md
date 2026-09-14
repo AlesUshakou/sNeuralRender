@@ -12,6 +12,10 @@ per-mask strengths and temporal history.</p>
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-lightgrey?style=flat-square"></a>
 </p>
 
+<p align="center"><img src="docs/demo.webp" alt="Before / after: original footage, then the neural result" width="800"></p>
+<p align="center"><sub>Original, then the neural result (animated preview). Full-quality 1080p clip:
+<a href="docs/vid03.mp4">docs/vid03.mp4</a>, 10 s; GitHub plays it on the file page.</sub></p>
+
 <p align="center"><img src="docs/panel.png" alt="sNeuralRender panel in Nuke" width="720"></p>
 
 <p align="center">
