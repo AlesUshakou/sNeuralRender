@@ -1,0 +1,6 @@
+# Nuke scripts and sBackup copies saved into this folder by mistake must never be published
+*.nk
+*.nk~
+*.autosave
+backups-*/
+

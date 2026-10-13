@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sNeuralRender: before / after</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #1b1b1b; color: #ddd; font: 15px/1.5 system-ui, Segoe UI, sans-serif; }
+  header { padding: 24px 24px 8px; }
+  h1 { margin: 0 0 4px; font-size: 22px; color: #ff5a00; }
+  h1 a { color: inherit; text-decoration: none; }
+  p { margin: 4px 0; color: #aaa; }
+  .cmp { max-width: 1400px; margin: 24px auto; padding: 0 16px; }
+  .cmp h2 { font-size: 16px; font-weight: 500; margin: 0 0 8px; color: #ddd; }
+  .wrap { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 6px; background: #000; cursor: ew-resize; user-select: none; }
+  .wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
+  .wrap img.top { clip-path: inset(0 50% 0 0); }
+  .line { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: #fff; box-shadow: 0 0 6px #000; pointer-events: none; }
+  .knob { position: absolute; top: 50%; left: 50%; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; background: #ff5a00; color: #fff; font-size: 16px; display: flex; align-items: center; justify-content: center; pointer-events: none; box-shadow: 0 0 8px #000; }
+  .tag { position: absolute; bottom: 10px; padding: 3px 8px; border-radius: 4px; background: rgba(0,0,0,.6); font-size: 13px; pointer-events: none; }
+  .tag.l { left: 10px; } .tag.r { right: 10px; }
+  footer { padding: 24px; color: #777; font-size: 13px; }
+  footer a { color: #aaa; }
+</style></head><body>
+<header>
+  <h1><a href="https://github.com/AlesUshakou/sNeuralRender">sNeuralRender</a>: before / after</h1>
+  <p>Drag the handle. Left: the neural result (DLSS pre-pass with scale 2, then the neural render). Right: the original frame.</p>
+</header>
+<section class="cmp">
+  <h2>model A (default), scene 01</h2>
+  <div class="wrap">
+    <img src="compare/A_01_original.jpg" alt="original">
+    <img class="top" src="compare/A_01_result.jpg" alt="neural result">
+    <div class="line"></div><div class="knob">&#8596;</div>
+    <span class="tag l">neural render</span><span class="tag r">original</span>
+  </div>
+</section>
+<section class="cmp">
+  <h2>model A (default), scene 02</h2>
+  <div class="wrap">
+    <img src="compare/A_02_original.jpg" alt="original">
+    <img class="top" src="compare/A_02_result.jpg" alt="neural result">
+    <div class="line"></div><div class="knob">&#8596;</div>
+    <span class="tag l">neural render</span><span class="tag r">original</span>
+  </div>
+</section>
+<section class="cmp">
+  <h2>model B (natural), scene 01</h2>
+  <div class="wrap">
+    <img src="compare/B_01_original.jpg" alt="original">
+    <img class="top" src="compare/B_01_result.jpg" alt="neural result">
+    <div class="line"></div><div class="knob">&#8596;</div>
+    <span class="tag l">neural render</span><span class="tag r">original</span>
+  </div>
+</section>
+<section class="cmp">
+  <h2>model C (cinematic), scene 01</h2>
+  <div class="wrap">
+    <img src="compare/C_01_original.jpg" alt="original">
+    <img class="top" src="compare/C_01_result.jpg" alt="neural result">
+    <div class="line"></div><div class="knob">&#8596;</div>
+    <span class="tag l">neural render</span><span class="tag r">original</span>
+  </div>
+</section>
+<section class="cmp">
+  <h2>model C (cinematic), scene 02</h2>
+  <div class="wrap">
+    <img src="compare/C_02_original.jpg" alt="original">
+    <img class="top" src="compare/C_02_result.jpg" alt="neural result">
+    <div class="line"></div><div class="knob">&#8596;</div>
+    <span class="tag l">neural render</span><span class="tag r">original</span>
+  </div>
+</section>
+<footer>NVIDIA DLSS 5 Neural Rendering inside Nuke. <a href="https://github.com/AlesUshakou/sNeuralRender/releases/latest">Download</a> ·
+<a href="https://github.com/AlesUshakou/sNeuralRender">README</a>. Not affiliated with NVIDIA.<br>
+Frames from <a href="https://peach.blender.org/">Big Buck Bunny</a>, &copy; 2008 Blender Foundation / www.bigbuckbunny.org,
+<a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</footer>
+<script>
+for (const w of document.querySelectorAll('.wrap')) {
+  const top = w.querySelector('img.top'), line = w.querySelector('.line'), knob = w.querySelector('.knob');
+  const set = x => { const r = w.getBoundingClientRect(); const p = Math.max(0, Math.min(1, (x - r.left) / r.width));
+    top.style.clipPath = `inset(0 ${(1 - p) * 100}% 0 0)`; line.style.left = knob.style.left = (p * 100) + '%'; };
+  let down = false;
+  w.addEventListener('pointerdown', e => { down = true; w.setPointerCapture(e.pointerId); set(e.clientX); });
+  w.addEventListener('pointermove', e => { if (down) set(e.clientX); });
+  w.addEventListener('pointerup', () => down = false);
+  w.addEventListener('pointercancel', () => down = false);
+}
+</script>
+</body></html>

@@ -1,12 +1,12 @@
 <h1 align="center">sNeuralRender</h1>
 
 <p align="center"><b>NVIDIA DLSS 5 Neural Rendering as a native Nuke node.</b><br>
-Neural relighting and detail on your footage, right in the node graph — with your own masks,
-per-mask strengths and temporal history.</p>
+Neural relighting and detail on your footage, right in the node graph — with a mask input,
+highlight recovery and temporal history.</p>
 
 <p align="center">
   <a href="https://github.com/AlesUshakou/sNeuralRender/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/AlesUshakou/sNeuralRender?style=flat-square&color=76b900"></a>
-  <img alt="Nuke 16.1 | 17.0" src="https://img.shields.io/badge/Nuke-16.1%20%7C%2017.0-f26a21?style=flat-square">
+  <img alt="Nuke 15.1 | 16.1 | 17.0 | 17.1" src="https://img.shields.io/badge/Nuke-15.1%20%7C%2016.1%20%7C%2017.0%20%7C%2017.1-f26a21?style=flat-square">
   <img alt="Windows x64" src="https://img.shields.io/badge/Windows-x64-0078d4?style=flat-square">
   <img alt="NVIDIA RTX" src="https://img.shields.io/badge/GPU-NVIDIA%20RTX-76b900?style=flat-square">
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-lightgrey?style=flat-square"></a>
@@ -22,9 +22,14 @@ per-mask strengths and temporal history.</p>
 </p>
 
 A native Nuke plugin that runs NVIDIA's **DLSS 5 Neural Rendering** (NGX feature 18) on your
-footage: global structure/tone controls, the runtime's automask, any number of your own masks
-with their own strengths, and temporal history driven by NVIDIA Optical Flow or your own
-motion vectors. `sNeuralRender-vX.Y-win64.zip` covers Nuke 16.1 and 17.0 on Windows x64.
+footage: structure/tone controls, the runtime's automask, a Nuke-style mask input, highlight
+recovery for scene-linear footage, and temporal history driven by NVIDIA Optical Flow or your own
+motion vectors. `sNeuralRender-vX.Y-win64.zip` covers Nuke 15.1, 16.1, 17.0 and 17.1 on Windows x64.
+
+<p align="center"><img src="docs/compare/wipe_A_01.webp" alt="Curtain: original on the right, DLSS 2x then the neural render on the left" width="800"></p>
+<p align="center"><sub>Original vs. DLSS pre-pass ×2 followed by the neural render (model A). &nbsp;
+<a href="https://alesushakou.github.io/sNeuralRender/"><b>Open the interactive before / after slider</b></a> — five pairs, models A / B / C, drag the handle.
+Frames from <a href="https://peach.blender.org/">Big Buck Bunny</a>, © 2008 Blender Foundation, CC BY 3.0.</sub></p>
 
 <p align="center"><img src="docs/demo.webp" alt="Before / after: original footage, then the neural result" width="800"></p>
 <p align="center"><sub>Original, then the neural result (animated preview). Full-quality 1080p clip:
@@ -38,7 +43,7 @@ motion vectors. `sNeuralRender-vX.Y-win64.zip` covers Nuke 16.1 and 17.0 on Wind
 | | |
 |---|---|
 | OS | Windows 10 / 11, x64 |
-| Nuke | 16.1 or 17.0 (Windows builds included; NukeX / Studio work the same) |
+| Nuke | 15.1, 16.1, 17.0 or 17.1 (Windows builds included; NukeX / Studio work the same) |
 | GPU | NVIDIA GPU supported by DLSS 5 Neural Rendering (GeForce RTX 40 / 50 series). **Tested on GeForce RTX 5090 and RTX PRO 6000 Blackwell.** |
 | Driver | A recent NVIDIA display driver. Tested with **610.88** (R610). The Neural Rendering runtime itself declares a minimum of 470; on 596.86 it created and evaluated feature 18 in our logs, but the plugin was not tested there. If `runtime info` shows an NGX error, update the driver first. |
 | Runtime | **`nvngx_dlssnr.dll`, not included** — NVIDIA's Neural Rendering runtime, tested build 310.8.0. See [Install](#install) for where to get it and where to put it. |
@@ -74,6 +79,12 @@ sNeuralRender\runtime\nvngx_dlssnr.dll
 The two other NVIDIA parts, the NGX core `_nvngx.dll` and NVIDIA Optical Flow `nvofapi64.dll`,
 come with your display driver; there is nothing to copy for them.
 
+**Optional:** `nvngx_dlss.dll` (DLSS Super Resolution) next to it enables the node's `DLAA` modes.
+This one is public: it ships in NVIDIA's [DLSS SDK](https://github.com/NVIDIA/DLSS)
+(`lib/Windows_x86_64/rel/nvngx_dlss.dll`), in the DLSS 5 AIO bundle's `01-Official-NVIDIA-DLLs`
+and in the video player package. Tested with 310.8.0; any 310.x should do. Without it the node
+works, `DLAA` just reports the file as missing.
+
 ### Steps
 
 1. Download `sNeuralRender-vX.Y-win64.zip` from the
@@ -84,10 +95,9 @@ come with your display driver; there is nothing to copy for them.
    ```
    sNeuralRender\
      init.py            adds the build matching your Nuke version to the plugin path
-     16.1\              sNeuralRender.dll for Nuke 16.1
-     17.0\              sNeuralRender.dll for Nuke 17.0
+     15.1\ 16.1\ 17.0\ 17.1\   sNeuralRender.dll per Nuke version
      core\              dlss5nr_core.dll, nvngx.dll_snr.dll (plugin code, Nuke-independent)
-     runtime\           <-- put nvngx_dlssnr.dll here (see above)
+     runtime\           <-- put nvngx_dlssnr.dll here (see above); nvngx_dlss.dll optional
    ```
 
 2. Copy **`nvngx_dlssnr.dll`** into **`sNeuralRender\runtime\`**.
@@ -121,17 +131,22 @@ Nuke version. If a build for your Nuke version is missing, the Nuke console says
 ## Using the node
 
 Inputs: `src` (the image; `rgb` is processed, alpha and other channels pass through),
-`motion` (optional Nuke `backward` motion vectors), `mask1`, `mask2`, … (appear as you connect
-masks). Output: `rgba` plus `nr_motion.u/v`, the vectors the runtime actually used (pixels).
+`motion` (optional Nuke `backward` motion vectors) and `mask` (optional). Output: `rgba` plus
+`nr_motion.u/v`, the vectors the runtime actually used (pixels).
 
 The panel follows NVIDIA's own "DLSS 5 developer controls":
 
 - **model** A / B / C — the runtime's three styles. **DLSS on** bypasses the node.
+- **DLAA** — optional DLSS stage from `nvngx_dlss.dll` (see Install): `pre-pass` runs DLAA
+  before the neural render, which is what the DLSS 5 player does and makes the result steadier
+  on compressed or noisy footage; `only` gives you DLSS without the neural render. The `scale`
+  slider (1.5×, 2×, 3×) turns DLSS into an upscaler, the output format grows; with `pre-pass` the
+  neural render then runs on the upscaled frame, so the detail is added at the output resolution.
+  Footage has no camera jitter, so DLSS itself resamples rather than invents detail.
 - **input colorspace** — the runtime is display-referred SDR (sRGB), so with `linear` (default)
   the node encodes to sRGB before it and decodes after. Use `display` when your footage is
   already video-encoded.
-- **GLOBAL CONTROLS** — `global` runs the neural renderer on the whole frame with
-  `structure intensity` / `tone intensity`. Switch `global` off to touch only the masked areas.
+- **GLOBAL CONTROLS** — `structure intensity` / `tone intensity` of the neural pass.
 - **HIGHLIGHTS** — `highlight recovery` (default 1) decides what happens to scene values above
   `recovery threshold` (default 1), which the runtime can only see as white. The neural result is
   applied to those pixels as a gain on the original value, so speculars and practicals keep their
@@ -140,11 +155,11 @@ The panel follows NVIDIA's own "DLSS 5 developer controls":
   Pixels at or below the threshold are untouched.
 - **MODEL AUTOMASK** — the runtime's automatic character/skin mask with its own
   `skin structure intensity` (it only has an effect while automask is on).
-- **MASKING** — connect a mask to `mask1` and its controls appear (the next arrow, `mask2`,
-  shows up automatically). Every mask is a separate neural pass with its own structure and
-  tone, composited over the result (`show masks` displays them in colour). Each pass costs one
-  runtime evaluation.
-- **mix** — final blend with the source.
+- **MASK** — the usual Nuke mask: connect anything to the `mask` input, pick the channel
+  (alpha by default), `invert` if needed. The neural result is applied only where the mask is;
+  outside it the frame is untouched. With nothing connected the mask controls are greyed out and
+  the whole frame is processed.
+- **mix** — final blend with the source (multiplied by the mask when one is connected).
 
 **Temporal** tab: `temporal` (on by default) keeps the runtime's history across frames, which is
 what removes frame-to-frame flicker. Playing or rendering forward continues the history;
@@ -165,7 +180,7 @@ initialisation (≈0.4 s) and ≈0.25 s per session (per pass / resolution). Eac
   so it cannot reconstruct texture inside a blown area.
 - Runtime 310.8.0 ignores its depth input and has one weight set; the node therefore exposes
   neither depth nor presets (they will come back when a runtime uses them).
-- Windows only, Nuke 16.1 and 17.0 (other versions need a rebuild from source).
+- Windows only, Nuke 15.1, 16.1, 17.0 and 17.1 (other versions need a rebuild from source).
 - Temporal results depend on the frame order: a Write that starts mid-shot replays `history`
   frames first, and Nuke's own caching does not know about frames before the current one.
 
@@ -184,6 +199,8 @@ initialisation (≈0.4 s) and ≈0.25 s per session (per pass / resolution). Eac
 - NVIDIA DLSS 5 Neural Rendering and NVIDIA Optical Flow — NVIDIA Corporation.
 - Runtime integration research: [lisitskyaa/ComfyUI-DLSS5-NR](https://github.com/lisitskyaa/ComfyUI-DLSS5-NR)
   and [2600th/dlss5-video-player](https://github.com/2600th/dlss5-video-player).
+- Before / after frames: [Big Buck Bunny](https://peach.blender.org/), © 2008 Blender Foundation /
+  www.bigbuckbunny.org, [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
 - Plugin: Aleš Ushakou, 2026 — [LinkedIn](https://www.linkedin.com/in/ale%C5%A1-ushakou-84250814) · [GitHub](https://github.com/AlesUshakou)
 
 ## License
