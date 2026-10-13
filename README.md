@@ -31,10 +31,6 @@ motion vectors. `sNeuralRender-vX.Y-win64.zip` covers Nuke 15.1, 16.1, 17.0 and 
 <a href="https://alesushakou.github.io/sNeuralRender/"><b>Open the interactive before / after slider</b></a> — five pairs, models A / B / C, drag the handle.
 Frames from <a href="https://peach.blender.org/">Big Buck Bunny</a>, © 2008 Blender Foundation, CC BY 3.0.</sub></p>
 
-<p align="center"><img src="docs/demo.webp" alt="Before / after: original footage, then the neural result" width="800"></p>
-<p align="center"><sub>Original, then the neural result (animated preview). Full-quality 1080p clip:
-<a href="docs/vid03.mp4">docs/vid03.mp4</a>, 10 s; GitHub plays it on the file page.</sub></p>
-
 > Not affiliated with or endorsed by NVIDIA. The plugin only drives NVIDIA's runtime; the
 > runtime itself is NVIDIA software and is **not included** in this download (see below).
 
