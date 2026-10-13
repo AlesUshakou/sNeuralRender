@@ -58,7 +58,7 @@ Frames from <a href="https://peach.blender.org/">Big Buck Bunny</a>, © 2008 Ble
    ```
    sNeuralRender\
      get_runtime.bat    downloads NVIDIA's runtime into runtime\ (step 2)
-     init.py            adds the build matching your Nuke version to the plugin path
+     init.py, menu.py   pick the build for your Nuke version, add the Nodes menu entry
      15.1\ 16.1\ 17.0\ 17.1\   sNeuralRender.dll per Nuke version
      core\              dlss5nr_core.dll, nvngx.dll_snr.dll (plugin code, Nuke-independent)
      runtime\           NVIDIA's nvngx_dlssnr.dll lands here; nvngx_dlss.dll optional (DLAA modes)
@@ -81,13 +81,11 @@ Frames from <a href="https://peach.blender.org/">Big Buck Bunny</a>, © 2008 Ble
    nuke.pluginAddPath('./sNeuralRender')
    ```
 
-   Optional menu entry, in `menu.py` next to it:
+   The folder's own `menu.py` puts the node into the Nodes menu as **Filter > sNeuralRender**;
+   that is also what makes the Tab search find it.
 
-   ```python
-   nuke.menu('Nodes').addCommand('Filter/sNeuralRender', "nuke.createNode('sNeuralRender')")
-   ```
-
-4. Restart Nuke. Press Tab in the node graph and type `sNeuralRender`.
+4. Restart Nuke. Press Tab in the node graph and type `sNeuralRender`, or pick it from
+   Filter > sNeuralRender.
 
 5. Open the node's **System** tab: `runtime info` shows the GPU, the NGX core that was found,
    the runtime path (`...\sNeuralRender\runtime`) and whether NVIDIA Optical Flow is available.
