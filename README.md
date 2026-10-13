@@ -42,46 +42,13 @@ Frames from <a href="https://peach.blender.org/">Big Buck Bunny</a>, © 2008 Ble
 | Nuke | 15.1, 16.1, 17.0 or 17.1 (Windows builds included; NukeX / Studio work the same) |
 | GPU | NVIDIA GPU supported by DLSS 5 Neural Rendering (GeForce RTX 40 / 50 series). **Tested on GeForce RTX 5090 and RTX PRO 6000 Blackwell.** |
 | Driver | A recent NVIDIA display driver. Tested with **610.88** (R610). The Neural Rendering runtime itself declares a minimum of 470; on 596.86 it created and evaluated feature 18 in our logs, but the plugin was not tested there. If `runtime info` shows an NGX error, update the driver first. |
-| Runtime | **`nvngx_dlssnr.dll`, not included** — NVIDIA's Neural Rendering runtime, tested build 310.8.0. See [Install](#install) for where to get it and where to put it. |
+| Runtime | **`nvngx_dlssnr.dll`, not included** — NVIDIA's Neural Rendering runtime, tested build 310.8.0. `get_runtime.bat` in the download fetches it (see [Install](#install)); by hand: [docs/RUNTIME.md](docs/RUNTIME.md). |
 
 ## Install
 
-### ⚠️ You need one file that is not in this download: `nvngx_dlssnr.dll`
-
-`nvngx_dlssnr.dll` is NVIDIA's Neural Rendering runtime (the neural network itself). It is
-NVIDIA software, so it is **not redistributed** with this plugin, and **the node does nothing
-without it** (`runtime info` on the System tab says `runtime not found`).
-
-Where to get it:
-
-- It ships inside NVIDIA's DLSS 5 packages and inside applications that bundle the DLSS 5
-  Neural Rendering runtime. The build this plugin was developed and tested with is
-  **310.8.0**. Two packages that carry exactly that build:
-  - [DLSS 5 AIO](https://github.com/ShugokiFable/dlss5-aio) — a bundle of official NVIDIA DLSS
-    DLLs plus the Neural Rendering runtime; take `nvngx_dlssnr.dll` (v310.8.0) from it.
-  - [DLSS 5 video player](https://github.com/2600th/dlss5-video-player) — the release zip
-    contains `neural-runtime\nvngx_dlssnr.dll`.
-- Use a legally obtained copy and keep NVIDIA's terms. Other builds of the runtime may behave
-  differently (parameters, supported inputs, quality).
-
-Where to put it — exactly here, file name unchanged:
-
-```
-sNeuralRender\runtime\nvngx_dlssnr.dll
-```
-
-(or point `runtime dir` on the node's System tab at any folder that contains it).
-
-The two other NVIDIA parts, the NGX core `_nvngx.dll` and NVIDIA Optical Flow `nvofapi64.dll`,
-come with your display driver; there is nothing to copy for them.
-
-**Optional:** `nvngx_dlss.dll` (DLSS Super Resolution) next to it enables the node's `DLAA` modes.
-This one is public: it ships in NVIDIA's [DLSS SDK](https://github.com/NVIDIA/DLSS)
-(`lib/Windows_x86_64/rel/nvngx_dlss.dll`), in the DLSS 5 AIO bundle's `01-Official-NVIDIA-DLLs`
-and in the video player package. Tested with 310.8.0; any 310.x should do. Without it the node
-works, `DLAA` just reports the file as missing.
-
-### Steps
+> ⚠️ **One file is not in this download: `nvngx_dlssnr.dll`**, NVIDIA's Neural Rendering
+> runtime (the neural network itself). It is NVIDIA software, so it is **not redistributed**
+> with the plugin, and **the node does nothing without it**. Step 2 fetches it.
 
 1. Download `sNeuralRender-vX.Y-win64.zip` from the
    [latest release](https://github.com/AlesUshakou/sNeuralRender/releases/latest) (not GitHub's
@@ -90,13 +57,21 @@ works, `DLAA` just reports the file as missing.
 
    ```
    sNeuralRender\
+     get_runtime.bat    downloads NVIDIA's runtime into runtime\ (step 2)
      init.py            adds the build matching your Nuke version to the plugin path
      15.1\ 16.1\ 17.0\ 17.1\   sNeuralRender.dll per Nuke version
      core\              dlss5nr_core.dll, nvngx.dll_snr.dll (plugin code, Nuke-independent)
-     runtime\           <-- put nvngx_dlssnr.dll here (see above); nvngx_dlss.dll optional
+     runtime\           NVIDIA's nvngx_dlssnr.dll lands here; nvngx_dlss.dll optional (DLAA modes)
    ```
 
-2. Copy **`nvngx_dlssnr.dll`** into **`sNeuralRender\runtime\`**.
+2. Double-click **`sNeuralRender\get_runtime.bat`**. It downloads `nvngx_dlssnr.dll` (about
+   110 MB; tested build 310.8.0, NVIDIA-signed) and the optional `nvngx_dlss.dll` (30 MB, enables
+   the `DLAA` modes) from public GitHub mirrors, checks their SHA-256 and puts them into
+   `sNeuralRender\runtime\`. By downloading the files you accept NVIDIA's terms.
+
+   **If the script fails** (no internet on the workstation, GitHub blocked, antivirus): get the
+   files by hand, see **[docs/RUNTIME.md](docs/RUNTIME.md)** — the sources, the checksums and
+   where to put them.
 
 3. Put the `sNeuralRender` folder somewhere on your Nuke plugin path, usually
    `C:\Users\<you>\.nuke\`, and add to `C:\Users\<you>\.nuke\init.py` (create the file if
@@ -116,7 +91,7 @@ works, `DLAA` just reports the file as missing.
 
 5. Open the node's **System** tab: `runtime info` shows the GPU, the NGX core that was found,
    the runtime path (`...\sNeuralRender\runtime`) and whether NVIDIA Optical Flow is available.
-   `runtime not found` means step 2 was skipped. Everything the plugin and the runtime log goes
+   `runtime not found` means step 2 did not complete. Everything the plugin and the runtime log goes
    to `sNeuralRender\<version>\sNeuralRender.log`.
 
 Studio / pipeline install: any directory on `NUKE_PATH` works the same way; only the
@@ -185,7 +160,7 @@ initialisation (≈0.4 s) and ≈0.25 s per session (per pass / resolution). Eac
 | Message / symptom | Meaning |
 |---|---|
 | `Unknown command sNeuralRender` | The folder is not on the plugin path, or no build for this Nuke version (see the console). |
-| `runtime not found` in `runtime info` | `nvngx_dlssnr.dll` is not in `sNeuralRender\runtime\` (see Install), or `runtime dir` on the System tab points elsewhere. |
+| `runtime not found` in `runtime info` | `nvngx_dlssnr.dll` is not in `sNeuralRender\runtime\`: run `get_runtime.bat` or fetch it by hand ([docs/RUNTIME.md](docs/RUNTIME.md)); or `runtime dir` on the System tab points elsewhere. |
 | NGX errors in `runtime info` (`0xBAD00001`, `feature ... not supported`) | The NGX core of your driver or the runtime build rejects the GPU / driver combination: update the driver (610.88 tested), then check that the GPU is one the runtime supports (RTX 40 / 50, RTX PRO Blackwell). |
 | Flicker between frames | Turn `temporal` on (Temporal tab). |
 | Slow scrubbing with heavy upstream nodes | Each random access replays `history` frames; lower `history`, or precomp the input. |
