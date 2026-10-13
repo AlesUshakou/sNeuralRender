@@ -139,11 +139,6 @@ jumping to a frame replays up to `history` frames before it (from the last detec
 Flow** (default), from the `motion` input (SmartVector / VectorGenerator `backward` layer), or is
 zero. Finished frames are cached (`cache (MB)`).
 
-## Performance
-
-Measured on an RTX PRO 6000, one pass: ≈15 ms per 1080p frame, ≈33 ms per 4K frame, plus one-time
-initialisation (≈0.4 s) and ≈0.25 s per session (per pass / resolution). Each mask adds a pass.
-
 ## Known limitations
 
 - SDR only: the runtime expects display-referred sRGB and only sees 0..1. Values above 1 keep
