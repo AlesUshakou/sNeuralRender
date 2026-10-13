@@ -141,9 +141,10 @@ zero. Finished frames are cached (`cache (MB)`).
 
 ## Known limitations
 
-- SDR only: the runtime expects display-referred sRGB and only sees 0..1. Values above 1 keep
-  their level through `highlights = preserve above 1`, but the network never sees highlight detail,
-  so it cannot reconstruct texture inside a blown area.
+- The runtime is SDR: it expects display-referred sRGB and sees nothing above 1. Scene values
+  above `recovery threshold` keep their level and colour through `highlight recovery`, but the
+  network itself gets them as flat white, so it adds no new texture inside such an area; what
+  comes back there is the original detail, not reconstructed one.
 - Runtime 310.8.0 ignores its depth input and has one weight set; the node therefore exposes
   neither depth nor presets (they will come back when a runtime uses them).
 - Windows only, Nuke 15.1, 16.1, 17.0 and 17.1 (other versions need a rebuild from source).
